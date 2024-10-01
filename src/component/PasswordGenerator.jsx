@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { useState, useCallback, useEffect } from "react";
 
 function App() {
@@ -5,6 +6,10 @@ function App() {
   const [allowChar, setAllowChar] = useState(false);
   const [allowNum, setAllowNum] = useState(false);
   let [password, setPassword] = useState("");
+  const btn =document.querySelector(".mess")
+  
+// useRef uses
+const passRef =useRef(null);
 
   // Callback Hook to memoize the changes in the variable.
   const passGenerator = useCallback(() => {
@@ -18,33 +23,45 @@ function App() {
       pass += str.charAt(char);
     }
     setPassword(pass); 
-  }, [length,allowChar, allowNum, setPassword]);
+  }, [length,allowChar,allowNum,setPassword,btn]);
 
+  
   // respond as per changes
   useEffect(() => {
     passGenerator();
   }, [length, allowChar, allowNum, passGenerator]);
+  // to handle UX for attention
+const copytoClipboard =useCallback(()=>{
+  // use of UserRef
+  passRef.current?.select();
+  passRef.current?.setSelectionRange(0,99);
 
-  const message =()=>{
-    document.querySelector(".mess").innerHTML = "copied";
-  }
+  window.navigator.clipboard.writeText(password);
+  // btn.innerHTML = "Copied";
+  btn.style.backgroundColor ="grey"
+
+
+},[password,btn])
+
+  
   return (
     // Password Generation  code inside Fragment
     <>
       <div className=" w-full  max-w-md mx-auto px-4 my-8  text-orange-500 rounded-lg bg-gray-700  ">
-        <div className="" >
+        <div className="mt-4" >
           <h1 className="text-center text-white ">Password Generator</h1>
-          <div className="flex shadow rounded-lg overflow-hidden mb-4 ">
+          <div className="flex shadow rounded-lg overflow-hidden mx-auto">
             <input
               type="text"
               value={password}
               required
               placeholder="Password"
               readOnly
-              className="outline-none w-full py-1 px-3 rounded-xl "
+              ref={passRef}
+              className="outline-none w-full py-1 px-2 rounded-xl "
             />
             
-            <button onClick={message} className= "mess bg-blue-600  w-15 rounded-xl text-black">
+            <button  onClick={copytoClipboard} className= "mess bg-blue-600  w-15 rounded-xl text-black">
               Copy
             </button>
           </div>
@@ -52,7 +69,7 @@ function App() {
             <input
               type="range"
               min={0}
-              max={60}
+              max={90}
               required
               value={length}
               onChange={(e) => {
@@ -67,13 +84,13 @@ function App() {
             <input
               type="checkbox"
               className="size-4 bottom-0 rounded-md"
-              onClick={(e) => setAllowNum(e.target.value)}
+              onChange={() => setAllowNum((prev)=>!prev)}
             />
             <label className="text-white font-bold size-4 pb-3">Number</label><br />
             <input
               type="checkbox"
               className="text-white size-4 rounded-md"
-              onClick={(e) => setAllowChar(e.target.value)}
+              onChange={() => setAllowChar((prev)=>!prev)}
             />
             <label htmlFor="" className="text-white font-bold ">
               Character
